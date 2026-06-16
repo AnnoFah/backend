@@ -35,11 +35,13 @@ const env = {
 };
 
 // Validasi env kritis di production
+// Validasi env kritis di production
 if (env.NODE_ENV === 'production') {
-  const required = ['JWT_SECRET', 'JWT_REFRESH_SECRET', 'DATABASE_URL'];
-  required.forEach((key) => {
-    if (!process.env[key]) throw new Error(`Environment variable ${key} wajib diisi`);
-  });
+  const required = ['JWT_SECRET', 'JWT_REFRESH_SECRET', 'DATABASE_URL', 'SUPABASE_URL', 'SUPABASE_SERVICE_KEY'];
+  const missing = required.filter(key => !process.env[key]);
+  if (missing.length > 0) {
+    throw new Error(`[CRITICAL] Environment variable berikut belum diisi di Vercel: ${missing.join(', ')}`);
+  }
 }
 
 module.exports = env;
