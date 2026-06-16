@@ -1,0 +1,108 @@
+// This is your Prisma schema file
+// Learn more about it: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── ROLES ──────────────────────────────────────────────────
+model Role {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique @db.VarChar(50)
+  description String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  users User[]
+
+  @@map("roles")
+}
+
+// ─── USERS ──────────────────────────────────────────────────
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique @db.VarChar(255)
+  password  String   @db.VarChar(255)
+  roleId    Int      @map("role_id")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  role     Role      @relation(fields: [roleId], references: [id])
+  employee Employee?
+  logs     Log[]
+
+  @@map("users")
+}
+
+// ─── EMPLOYEES ──────────────────────────────────────────────
+model Employee {
+  id           String   @id @default(uuid())
+  userId       String   @unique @map("user_id")
+  employeeCode String   @unique @db.VarChar(20) @map("employee_code")
+  fullName     String   @db.VarChar(255) @map("full_name")
+  phone        String?  @db.VarChar(20)
+  department   String?  @db.VarChar(100)
+  position     String?  @db.VarChar(100)
+  avatarUrl    String?  @db.Text @map("avatar_url")
+  joinDate     DateTime @db.Date @map("join_date")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attendance Attendance[]
+
+  @@map("employees")
+}
+
+// ─── ATTENDANCE STATUS ───────────────────────────────────────
+enum AttendanceStatus {
+  HADIR
+  TERLAMBAT
+  IZIN
+  SAKIT
+  ALPHA
+}
+
+// ─── ATTENDANCE ──────────────────────────────────────────────
+model Attendance {
+  id           String           @id @default(uuid())
+  employeeId   String           @map("employee_id")
+  date         DateTime         @db.Date
+  checkInTime  DateTime?        @map("check_in_time")
+  checkOutTime DateTime?        @map("check_out_time")
+  checkInLat   Decimal?         @db.Decimal(10, 8) @map("check_in_lat")
+  checkInLng   Decimal?         @db.Decimal(11, 8) @map("check_in_lng")
+  checkOutLat  Decimal?         @db.Decimal(10, 8) @map("check_out_lat")
+  checkOutLng  Decimal?         @db.Decimal(11, 8) @map("check_out_lng")
+  status       AttendanceStatus @default(HADIR)
+  notes        String?          @db.Text
+  createdAt    DateTime         @default(now()) @map("created_at")
+  updatedAt    DateTime         @updatedAt @map("updated_at")
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  // Constraint: 1 absensi per karyawan per hari
+  @@unique([employeeId, date])
+  @@map("attendance")
+}
+
+// ─── LOGS ────────────────────────────────────────────────────
+model Log {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  action      String   @db.VarChar(100)
+  description String?  @db.Text
+  ipAddress   String?  @db.VarChar(45) @map("ip_address")
+  userAgent   String?  @db.Text @map("user_agent")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("logs")
+}
