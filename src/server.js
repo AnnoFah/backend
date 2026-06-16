@@ -88,17 +88,19 @@ app.use((req, res) => {
 app.use(errorHandler);
 
 // ── START SERVER ─────────────────────────────────────────────────
-const PORT = env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log('');
-  console.log('╔═══════════════════════════════════════════════════╗');
-  console.log('║     🏢  MCC Absensi Backend API  🏢               ║');
-  console.log('╠═══════════════════════════════════════════════════╣');
-  console.log(`║  🚀 Server berjalan di port ${PORT}                 ║`);
-  console.log(`║  🌍 Environment: ${env.NODE_ENV.padEnd(31)} ║`);
-  console.log(`║  📡 URL: http://localhost:${PORT}/api/v1            ║`);
-  console.log('╚═══════════════════════════════════════════════════╝');
-  console.log('');
-});
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
+  const PORT = env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log('');
+    console.log('╔═══════════════════════════════════════════════════╗');
+    console.log('║     🏢  MCC Absensi Backend API  🏢               ║');
+    console.log('╠═══════════════════════════════════════════════════╣');
+    console.log(`║  🚀 Server berjalan di port ${PORT}                 ║`);
+    console.log(`║  🌍 Environment: ${env.NODE_ENV.padEnd(31)} ║`);
+    console.log(`║  📡 URL: http://localhost:${PORT}/api/v1            ║`);
+    console.log('╚═══════════════════════════════════════════════════╝');
+    console.log('');
+  });
+}
 
 module.exports = app;
